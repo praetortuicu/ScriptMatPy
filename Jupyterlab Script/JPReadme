@@ -1,0 +1,13 @@
+A short description on how I will be working on the Jupyterlab project for Christian:
+since code has already been written by someone else in the Notebook and because I find Jupyterlab to be a little
+confusing at times, I think the best way to write and implement new functions to it would be the following:
+for each game, I will write a function in my IDE of choice (that is Microsoft Visual Studio 2022 at this moment)
+and I will then push each separate module to this repository. I think that way it is easiest to keep track of what I did,
+if it is correct and it is easier for anyone else to check out. After testing is completed for each module, I will simply
+copy-paste it into the Jupyterlab Notebook in its' respective cell. This is, in my opinion, the safest and most efficient way of both
+writing the code and testing/keeping track of it without having to spend too much time on setting up Jupyterlab.
+
+As a sidenote: I will also upload the instructions which Christian and Theresa have given me regarding how to implement variable
+calculations for each game, just so everything makes sense when reading through the code.
+
+If there is anything else I might have left out or should do differently, feel free to contact me.
