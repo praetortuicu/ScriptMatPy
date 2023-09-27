@@ -17,5 +17,6 @@ if is_hdf5_matlab_file(file_path) is False:
         show_data(struct)
     except OSError:
         print("Could not load file! Check your file path, version...")
-        
+else:
+    struct = h5py.File(file_path)
 
