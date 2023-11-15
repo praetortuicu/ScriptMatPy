@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFileDialog, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFileDialog, QTableWidget, QTableWidgetItem, QComboBox
 import sys
 import numpy as np
+import scipy.io
 
 from MatToPy import MatToPyHDF5, MatToPySTD, MatToPy_Base
 
@@ -16,6 +17,9 @@ class MatplotlibViewer(QWidget):
         self.load_button = QPushButton('Load MATLAB Data')
         self.load_button.clicked.connect(self.load_matlab_data)
 
+        self.group_selector_label = QLabel('Select Group:')
+        self.group_selector = QComboBox()
+
         self.data_label = QLabel('')
 
         self.table = QTableWidget()
@@ -23,74 +27,118 @@ class MatplotlibViewer(QWidget):
         self.data = None
 
         self.layout.addWidget(self.load_button)
+        self.layout.addWidget(self.group_selector_label)
+        self.layout.addWidget(self.group_selector)
         self.layout.addWidget(self.data_label)
         self.layout.addWidget(self.table)
 
         self.setLayout(self.layout)
 
         self.show()
+    
+    def display_mat_data(self, data_dict):
+        # Clear previous table contents
+        self.table.clear()
+
+        if data_dict is not None:
+            # Iterate over the keys and values in data_dict
+            for key, value in data_dict.items():
+                # Create a new row in the table for each key-value pair
+                row_position = self.table.rowCount()
+                self.table.insertRow(row_position)
+
+                # Set the key in the first column
+                key_item = QTableWidgetItem(str(key))
+                self.table.setItem(row_position, 0, key_item)
+
+                # Set the value in the second column
+                value_item = QTableWidgetItem(str(value))
+                self.table.setItem(row_position, 1, value_item)
 
     def load_matlab_data(self):
         try:
             options = QFileDialog.Options()
             file_path, _ = QFileDialog.getOpenFileName(self, "Open MATLAB Data File", "", "MATLAB Files (*.mat);;All Files (*)", options=options)
             print(f"File path: {file_path}")
-
+        
             if file_path:
                 mat_to_py_instance = MatToPy_Base()
                 is_hdf5, data = mat_to_py_instance.is_hdf5_matlab_file(file_path)
                 if is_hdf5:
-                    # Load MATLAB HDF5 data
                     hdf5_instance = MatToPyHDF5()
-                    object_references = hdf5_instance.import_data(file_path)
+                    self.data = hdf5_instance.import_data(file_path)
+                    data_dict = hdf5_instance.access_objects_in_dataset(self.data)
 
                     # Access the objects in 'Sub' using the new approach
-                    data_dict = hdf5_instance.access_objects_in_dataset(object_references)
-
-                    # Display grouped data
-                    for group_index, obj_ref in data_dict.items():
-                        print(f"Data in group {group_index}:")
-                        print(obj_ref)
-
+                    for item in data_dict.values():
+                        print(item)
                     print("File path: ", file_path)
                 else:
-                    mat_to_py_instance = MatToPySTD()
-                    data_dict = mat_to_py_instance.import_data(file_path)
+                    # Load standard MATLAB data
+                    data_dict = MatplotlibViewer.load_standard_mat(file_path)
                     self.data = data_dict.get('StructTimeSmaller', None)
-                
-                    if self.data is not None:
-                        # Display data
-                        if hasattr(self.data, 'shape'):
-                            self.data_label.setText(f'Data shape: {self.data.shape}')
-                        else:
-                            self.data_label.setText('Data shape: (Not applicable)')
-
-                        # Populate table
-                        if isinstance(self.data, np.ndarray):
-                            self.table.setRowCount(self.data.shape[0])
-                            self.table.setColumnCount(self.data.shape[1])
-
-                            for i in range(self.data.shape[0]):
-                                for j in range(self.data.shape[1]):
-                                    item = QTableWidgetItem(str(self.data[i, j]))
-                                    self.table.setItem(i, j, item)
-                        else:
-                            print("Data is not an array.")
+            
+                if data_dict is not None:
+                    # Display data
+                    if hasattr(self.data, 'shape'):
+                        self.data_label.setText(f'Data shape: {self.data.shape}')
                     else:
-                        print("Data import failed!")
+                        self.data.label.setText('Data shape: (Not applicable)')
 
+                    # Populate table
+                    if isinstance(self.data, np.ndarray):
+                        self.table.setRowCount(self.data.shape[0])
+                        self.table.setColumnCount(self.data.shape[1])
+
+                        for i in range(self.data.shape[0]):
+                            for j in range(self.data.shape[1]):
+                                item = QTableWidgetItem(str(self.data[i, j]))
+                                self.table.setItem(i, j, item)
+                    else:
+                        print("Data is not an array.")
+                    
+                    for key, value in data_dict.items():
+                        print(f"Key: {key}, Value: {value}")
+                else:
+                    print("Data import failed!")
+            
         except Exception as e:
             print(f"Error importing data: {e}")
             return None
 
 
 
-                    
+    @staticmethod
+    def load_standard_mat(file_path):
+        try:
+            data_dict = scipy.io.loadmat(file_path)
+            return data_dict
+        except Exception as e:
+            print(f"Error loading standard MATLAB file: {e}")
+            return None
 
-def main():
+
+    def extract_hdf5_data(self, hdf5_reference):
+        # Print attributes and keys to understand the HDF5 structure
+        print(f"Attributes: {dict(hdf5_reference.attrs)}")
+        print(f"Keys: {list(hdf5_reference.keys())}")
+
+        try:
+            # Your implementation to extract data based on the HDF5 structure
+            extracted_data = hdf5_reference['sub_char'][:]
+            return extracted_data
+        except Exception as e:
+            print(f"Error extracting HDF5 data: {e}")
+            return None
+
+
+    def display_group_data(self, group_index):
+        if self.data is not None and group_index < len(self.data):
+            group_data = self.data[group_index]
+            # Display the group data in the table (modify this based on your actual data structure)
+            # ...
+
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     viewer = MatplotlibViewer()
     sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    main()
