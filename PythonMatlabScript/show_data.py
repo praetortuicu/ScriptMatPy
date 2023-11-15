@@ -1,3 +1,6 @@
+#this function is here only to double-check the import, right now it doesn't work for HDF5 files
+
+
 import numpy as np
 
 def show_data(struct):

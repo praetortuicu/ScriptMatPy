@@ -2,21 +2,27 @@ import h5py
 import numpy as np
 import scipy.io
 import matplotlib
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFileDialog, QTableWidget, QTableWidgetItem
+import sys
 
+# from show_data import show_data
+from MatToPy import MatToPy_Base, MatToPyHDF5, MatToPySTD
 
-from show_data import show_data
-from MatToPy import is_hdf5_matlab_file
+struct = MatToPySTD()
 
 #path to the .mat file on your machine
-file_path = 'C:\...\matlab_file_on_your_machine.mat'
-is_hdf5_matlab_file(file_path)
+struct.path = 'C:\Workspace\HiWi\HCMR\Received Data\Data from Liz\Example Data\MAT_normalizedData_PostStrokeAdults_SMALL.mat'
 
-if is_hdf5_matlab_file(file_path) is False:
-    try:
-        struct = scipy.io.loadmat(file_path)
-        show_data(struct)
-    except OSError:
-        print("Could not load file! Check your file path, version...")
-else:
-    struct = h5py.File(file_path)
+#what field are you searching for:
+group_name = 'sub_char'
+MatToPySTD.import_data(struct)
+# print(struct.data)
+MatToPySTD.access_matlab_subfield(struct, 'Sub', 'events')
 
+# MatToPyHDF5.import_data(struct)
+# MatToPyHDF5.explore_hdf5_structure_and_access_data(struct, group_name)
+#the import works, the data is weird. some structure issues, check hdf5 documentation
+
+
+#MatToPyHDF5.get_field_value_and_position_HDF5(struct, field_name)
+#TODO: write a function that shows where exactly in the matlab struct a specific variable is and print out its' value
