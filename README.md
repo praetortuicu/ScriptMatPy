@@ -1,5 +1,6 @@
 # PythonMatlabScript
 
-This script handles rudimentary dataset imports from Matlab into Python by first checking what kind of format the files are saved in (right now, either HDF5 or standard Matlab are supported).
-The MatToPy.py module contains a function which checks the file type and returns True if the file is HDF5 format and False if it is standard Matlab format.
-The show_data.py module prints out a neat and visible representation of the data, if it is not imported with the h5py package (used for a quick look at how the data is structured after being imported).
+The MatToPy tool is written and maintained by Teodor Ticu, Bachelor student at the University of Heidelberg in support of the Heidelberg Center for Motion Research.
+
+This is a tool that handles imports of Matlab data in python. It is still a work in progress, since for now the data can't be interacted with. In order to make the data visualization easier, a GUI appears. In this GUI you can load the data from your machine and you will be able to see what you imported. The console prints both messages and the data as-is in the background, in order to be able to check if the import worked successfully.
+As of right now, only standard .mat files work seamlessly for this, since HDF5 is a little odd and requires more tailoring (this is a TODO). There is a method in the MatToPy module which helps you check whether the Matlab file you are working with is HDF5 or Standard Matlab. 
