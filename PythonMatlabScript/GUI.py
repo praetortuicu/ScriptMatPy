@@ -5,6 +5,12 @@ import scipy.io
 
 from MatToPy import MatToPyHDF5, MatToPySTD, MatToPy_Base
 
+"""
+This class handles the creation and data visualization in a GUI, similar to how Matlab represents the data. Implementation in progress,
+HDF5 is not available yet, because of the way HDF5 is formatted
+"""
+
+
 class MatplotlibViewer(QWidget):
     def __init__(self):
         super().__init__()
@@ -37,21 +43,21 @@ class MatplotlibViewer(QWidget):
         self.show()
     
     def display_mat_data(self, data_dict):
-        # Clear previous table contents
+        #Clear previous table contents
         self.table.clear()
 
         if data_dict is not None:
-            # Iterate over the keys and values in data_dict
+            #Iterate over the keys and values in data_dict
             for key, value in data_dict.items():
-                # Create a new row in the table for each key-value pair
+                #Create a new row in the table for each key-value pair
                 row_position = self.table.rowCount()
                 self.table.insertRow(row_position)
 
-                # Set the key in the first column
+                #Set the key in the first column
                 key_item = QTableWidgetItem(str(key))
                 self.table.setItem(row_position, 0, key_item)
 
-                # Set the value in the second column
+                #Set the value in the second column
                 value_item = QTableWidgetItem(str(value))
                 self.table.setItem(row_position, 1, value_item)
 
@@ -69,23 +75,23 @@ class MatplotlibViewer(QWidget):
                     self.data = hdf5_instance.import_data(file_path)
                     data_dict = hdf5_instance.access_objects_in_dataset(self.data)
 
-                    # Access the objects in 'Sub' using the new approach
+                    #Access the objects in 'Sub'
                     for item in data_dict.values():
                         print(item)
                     print("File path: ", file_path)
                 else:
-                    # Load standard MATLAB data
+                    #Load standard MATLAB data
                     data_dict = MatplotlibViewer.load_standard_mat(file_path)
-                    self.data = data_dict.get('StructTimeSmaller', None)
+                    self.data = data_dict.get('StructTimeSmaller', None) #Note that StructTimeSmaller needs to be replaced with the actual name of the Matlab file on your machine
             
                 if data_dict is not None:
-                    # Display data
+                    #Display data
                     if hasattr(self.data, 'shape'):
                         self.data_label.setText(f'Data shape: {self.data.shape}')
                     else:
                         self.data.label.setText('Data shape: (Not applicable)')
 
-                    # Populate table
+                    #Populate table
                     if isinstance(self.data, np.ndarray):
                         self.table.setRowCount(self.data.shape[0])
                         self.table.setColumnCount(self.data.shape[1])
@@ -119,12 +125,12 @@ class MatplotlibViewer(QWidget):
 
 
     def extract_hdf5_data(self, hdf5_reference):
-        # Print attributes and keys to understand the HDF5 structure
+        #Print attributes and keys to understand the HDF5 structure
         print(f"Attributes: {dict(hdf5_reference.attrs)}")
         print(f"Keys: {list(hdf5_reference.keys())}")
 
         try:
-            # Your implementation to extract data based on the HDF5 structure
+            #Extract data based on the HDF5 structure
             extracted_data = hdf5_reference['sub_char'][:]
             return extracted_data
         except Exception as e:
@@ -135,8 +141,8 @@ class MatplotlibViewer(QWidget):
     def display_group_data(self, group_index):
         if self.data is not None and group_index < len(self.data):
             group_data = self.data[group_index]
-            # Display the group data in the table (modify this based on your actual data structure)
-            # ...
+            #Display the group data in the table (this will need to be modified)
+            
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

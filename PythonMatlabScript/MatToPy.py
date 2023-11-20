@@ -141,6 +141,12 @@ class MatToPySTD(MatToPy_Base):
 
 
     def access_matlab_subfield(self, field_name, subfield_name):
+        """
+        Access the subfields of the Matlab struct. Implementation still in progress, but the idea is to be able to click on each subfield
+        and see the data underneath in the window
+        Args: Name of the main field and of the subfield.
+        Returns: subfield variable of type passed, depending on the data format imported
+        """
         try:
             # Load the .mat file into a Python dictionary
             data_dict = scipy.io.loadmat(self.path)
