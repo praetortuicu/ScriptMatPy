@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTreeView, QDialog, QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QFileDialog, QTableWidget, QTableWidgetItem, QComboBox
-from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 import sys
 import numpy as np
@@ -7,10 +7,6 @@ import scipy.io
 
 from MatToPy import MatToPyHDF5, MatToPySTD, MatToPy_Base
 
-"""
-This class handles the creation and data visualization in a GUI, similar to how Matlab represents the data. Implementation in progress,
-HDF5 is not available yet, because of the way HDF5 is formatted
-"""
 
 class SubArrayViewer(QDialog):
     def __init__(self, data):
@@ -44,23 +40,28 @@ class SubArrayViewer(QDialog):
                 field_item = QStandardItem(str(field_name))
                 parent_item.appendRow(field_item)
 
-                if isinstance(field_data, np.ndarray) and field_data.dtype.names is not None:
-                    # If the field is another structured array, recursively populate
+                if isinstance(field_data, np.ndarray):
+                    # If the field is an array, add its elements as child items
+                    for i in range(field_data.shape[0]):
+                        sub_array_item = QStandardItem(f"Element {i+1}")
+                        field_item.setChild(i, sub_array_item)
+                        self.populate_model(field_data[i], sub_array_item)
+                elif isinstance(field_data, np.void):
+                    # If the field is a nested structure, recursively populate
                     self.populate_model(field_data, field_item)
                 else:
-                    # If the field is a regular array, add its elements as child items
-                    for i in range(field_data.shape[0]):
-                        for j in range(field_data.shape[1]):
-                            value = str(field_data[i, j])
-                            item = QStandardItem(value)
-                            item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Make cells non-editable
-                            field_item.appendRow(item)
+                    # If the field is a scalar, add it as a child item
+                    item = QStandardItem(str(field_data))
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Make cells non-editable
+                    field_item.appendRow(item)
+        elif isinstance(data, dict):
+            # Handle nested structure
+            for field_name, field_data in data.items():
+                field_item = QStandardItem(str(field_name))
+                parent_item.appendRow(field_item)
 
-                            # Check if the element is itself an array and handle it
-                            if isinstance(field_data[i, j], np.ndarray):
-                                sub_array_item = QStandardItem(f"Element {i+1}, {j+1}")
-                                field_item.setChild(i, sub_array_item)
-                                self.populate_model(field_data[i, j], sub_array_item)
+                # Recursively populate for nested structs or arrays
+                self.populate_model(field_data, field_item)
         else:
             # Handle other types of data (e.g., scalars, strings)
             item = QStandardItem(str(data))
@@ -78,7 +79,7 @@ class SubArrayViewer(QDialog):
     def extract_sub_array_data(self, item):
         # Extract the data associated with the clicked item
         data = self.data
-        path = []
+        path = {}
 
         # Traverse the hierarchy to extract the path
         while item is not None:
@@ -97,13 +98,13 @@ class SubArrayViewer(QDialog):
                 elif field_name.isdigit():
                     # Handling tuple indices
                     data = data[int(field_name) - 1]
+            elif isinstance(data, dict):
+                data = data[field_name]
             elif isinstance(data, tuple):
                 data = data[int(field_name.split()[-1]) - 1]
 
         return data
 
-
-    
 
 class MatplotlibViewer(QWidget):
     def __init__(self):
@@ -204,18 +205,9 @@ class MatplotlibViewer(QWidget):
 
         except Exception as e:
             print(f"Error importing data: {e}")
-
-    def show_sub_array_dialog(self, item):
-        if item is not None:
-            row = item.row()
-            col = item.column()
-
-            # Retrieve the sub-array data based on the clicked cell
-            sub_array_data = self.data[row, col]
-
-            # Display the sub-array data in a new dialog
-            sub_array_dialog = SubArrayViewer(sub_array_data)
-            sub_array_dialog.exec_()
+        if self.data is not None:
+            print("Matlab data: ")
+            print(self.data)
 
     @staticmethod
     def load_standard_mat(file_path):
