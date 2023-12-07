@@ -4,7 +4,6 @@ and make sure all necessary python packages are installed, otherwise the app mig
 This is still a work in progress, as some functionality is yet to be added.
 """
 
-
 import h5py
 import numpy as np
 import scipy.io
