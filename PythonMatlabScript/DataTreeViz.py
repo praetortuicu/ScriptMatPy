@@ -34,9 +34,6 @@ class DataTreeViewer(QDialog):
         self.populate_tree()
 
 
-
-
-
     def load_matlab_data(self):
         try:
             """
