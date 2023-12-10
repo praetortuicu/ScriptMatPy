@@ -1,14 +1,7 @@
-import scipy.io
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QApplication
+from scipy.io import loadmat, matlab
 import numpy as np
 import sys
-from PyQt5.QtWidgets import QApplication, QTreeWidget, QTreeWidgetItem
-
-
-
-# DataTreeViz.py
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTreeWidget, QTreeWidgetItem
-import scipy.io
-import numpy as np
 
 class DataTreeViewer(QDialog):
     def __init__(self, file_path):
@@ -34,13 +27,64 @@ class DataTreeViewer(QDialog):
 
         self.populate_tree()
 
+
     def load_matlab_data(self):
-        try:
-            data_dict = scipy.io.loadmat(self.file_path, squeeze_me=True, struct_as_record=False)
-            return data_dict
-        except Exception as e:
-            print(f"Error importing Matlab file: {e}")
-            return None
+        """
+        This function should be called instead of direct scipy.io.loadmat
+        as it cures the problem of not properly recovering python dictionaries
+        from mat files. It calls the function check keys to cure all entries
+        which are still mat-objects
+        """
+        def _check_vars(d):
+            """
+            Checks if entries in dictionary are mat-objects. If yes
+            todict is called to change them to nested dictionaries
+            """
+            for key in d:
+                if isinstance(d[key], matlab.mio5_params.mat_struct):
+                    d[key] = _todict(d[key])
+                elif isinstance(d[key], np.ndarray):
+                    d[key] = _toarray(d[key])
+            return d
+
+        def _todict(matobj):
+            """
+            A recursive function that constructs nested dictionaries from matobjects
+            """
+            d = {}
+            for strg in matobj._fieldnames:
+                elem = matobj.__dict__[strg]
+                if isinstance(elem, matlab.mio5_params.mat_struct):
+                    d[strg] = _todict(elem)
+                elif isinstance(elem, np.ndarray):
+                    d[strg] = _toarray(elem)
+                else:
+                    d[strg] = elem
+            return d
+
+        def _toarray(ndarray):
+            """
+            A recursive function that constructs an ndarray from cellarrays
+            (which are loaded as numpy ndarrays), recursing into the elements
+            if they contain matobjects.
+            """
+            if ndarray.dtype != 'float64':
+                elem_list = []
+                for sub_elem in ndarray:
+                    if isinstance(sub_elem, matlab.mio5_params.mat_struct):
+                        elem_list.append(_todict(sub_elem))
+                    elif isinstance(sub_elem, np.ndarray):
+                        elem_list.append(_toarray(sub_elem))
+                    else:
+                        elem_list.append(sub_elem)
+                return np.array(elem_list)
+            else:
+                return ndarray
+
+        data = loadmat(self.file_path, struct_as_record=False, squeeze_me=True)
+        data_dict = _check_vars(data)
+        return data_dict
+
 
     def add_items_to_tree(self, parent_item, values):
         if isinstance(values, np.ndarray) and len(values.shape) == 1:
