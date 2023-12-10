@@ -27,6 +27,10 @@ class DataTreeViewer(QDialog):
 
         self.populate_tree()
 
+
+
+
+
     def load_matlab_data(self):
         """
         This function should be called instead of direct scipy.io.loadmat
