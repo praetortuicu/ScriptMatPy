@@ -1,3 +1,9 @@
+# Remarks: the script needs a lot of optimization, because it takes a while for it to load the bigger dataset. Also,
+# it would be best if I tried it out on the general structure of the datasets in the paper, especially if those datasets
+# are different in structure from what I have been working with until recently. The only thing left to add as of now
+# is the comparison feature, where one can look at the values for the same field of different subjects.
+
+
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QApplication
 from scipy.io import loadmat, matlab
 import numpy as np
@@ -134,10 +140,16 @@ class DataTreeViewer(QDialog):
                 self.tree.addTopLevelItem(child_item)
 
     def populate_tree(self):
+        print("Populating tree...")  # Add this line
         if self.data_dict is not None:
-            items = []
-            for key, values in self.data_dict.items():
-                item = QTreeWidgetItem([str(key)])
-                self.add_items_to_tree(item, values)
-                items.append(item)
-            self.tree.insertTopLevelItems(0, items)
+            print("Data found...")  # Add this line
+            subjects_data = self.data_dict['Sub']
+            for subject_index, subject_data in enumerate(subjects_data, start=1):
+                subject_item = QTreeWidgetItem(["Subject " + str(subject_index)])
+                self.tree.addTopLevelItem(subject_item)
+                for field_name, field_value in subject_data.items():
+                    field_item = QTreeWidgetItem([str(field_name)])
+                    subject_item.addChild(field_item)
+                    self.add_items_to_tree(field_item, field_value)
+        else:
+            print("Data not found...")  # Add this line
