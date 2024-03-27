@@ -14,7 +14,7 @@ class DataTreeViewer(QDialog):
 
         self.file_path = file_path
         self.data_dict = self.load_matlab_data()
-
+        print(type(self.data_dict))
         self.init_ui()
 
     def init_ui(self):
@@ -26,7 +26,7 @@ class DataTreeViewer(QDialog):
         self.tree = QTreeWidget()
         self.tree.setColumnCount(2)
         self.tree.setHeaderLabels(["Key", "Value"])
-        self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
+        #self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
 
         self.layout.addWidget(self.tree)
         self.setLayout(self.layout)
@@ -89,24 +89,28 @@ class DataTreeViewer(QDialog):
 
             data = loadmat(self.file_path, struct_as_record=False, squeeze_me=True)
             data_dict = _check_vars(data)
-            print("Loaded data dict: ", data_dict)
+            #print("Loaded data dict: ", data_dict)
+            #value = type(data_dict[2])
+            #print(value)
             return data_dict
         except Exception as e:
             print("Error in load_matlab_data", e)
             traceback.print_exc()
 
+        
+
     def add_items_to_tree(self, parent_item, values):
         try:
             print("Creating tree...")
             if isinstance(values, np.ndarray) and len(values.shape) == 1:
-                child_item = QTreeWidgetItem(["Value", str(values)])
+                child_item = QTreeWidgetItem(["Value", np.array2string(values)])
                 if parent_item is not None:
                     parent_item.addChild(child_item)
                 else:
                     self.tree.addTopLevelItem(child_item)
             elif isinstance(values, np.ndarray) and len(values.shape) == 2:
                 for row in values:
-                    child_item = QTreeWidgetItem(["Value", str(row)])
+                    child_item = QTreeWidgetItem(["Value", np.array2string(row)])
                     if parent_item is not None:
                         parent_item.addChild(child_item)
                     else:
@@ -165,3 +169,4 @@ class DataTreeViewer(QDialog):
         except Exception as e:
             print("Error in populate_tree", e)
             traceback.print_exc()
+        
