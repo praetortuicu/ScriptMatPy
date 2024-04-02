@@ -44,12 +44,12 @@ class MainGUI(QWidget):
                 traceback.print_exc()
         # This function handles clicking on a value in the data tree viewer and prints it in the console. That way, the value can be used for later calculations
         def on_item_clicked(self, item, column):
-            value_text = item.text(1)
+            value_text = item.text(1).strip()
             print("Value text: ", value_text)
             try:
                 # Type conversion because of the Matlab file
-                value_list = ast.literal_eval(value_text)
-                value_array = np.array(value_list)
+                #value_list = ast.literal_eval(value_text)
+                value_array = np.array([float(x) for x in value_text[1:-1].split()])
                 print("Value array: ", value_array) # This was used for debugging
 
 
