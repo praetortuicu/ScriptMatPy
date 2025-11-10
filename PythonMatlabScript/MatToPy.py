@@ -3,10 +3,7 @@ import h5py
 import scipy
 import numpy as np
 
-
 from collections import deque
-from os import name
-
 
 class MatToPy_Base:
         def __init__(self) -> None:
@@ -50,9 +47,6 @@ class MatToPy_Base:
             """
             raise NotImplementedError("Subclasses must implement import_data")            
             
-        
-            
-        
         # # Example usage:
         # matlab_file_path = 'your_data_file.mat'  # Replace with the path to your MATLAB data file
         # field_to_find = 'Age'                   # Replace with the name of the field you want to retrieve
