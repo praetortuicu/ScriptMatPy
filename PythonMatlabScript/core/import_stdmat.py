@@ -1,9 +1,8 @@
 import logging
 import scipy.io
 import numpy as np
-from collection import deque
+from collections import deque
 from .base_importer import MatToPy_Base
-
 
 logger  =   logging.getLogger(__name__)
 
@@ -67,9 +66,8 @@ class MatToPySTD(MatToPy_Base):
         except Exception as e:
             logger.info(f"Error traversing Matlab structure: {e}", exc_info=True)
             return None, None
-        
 
-    def explore_structure(self, key: str) -> dict:
+    def explore_structure(self, key:    str)    ->dict:
         """
         Return the contents of a field or group without printing — for GUI or logging display.
 
@@ -94,7 +92,6 @@ class MatToPySTD(MatToPy_Base):
         except Exception as e:
             logger.error(f"Error loading or exploring MAT file: {e}")
             return None
-
 
     def access_subfield(self, field_name: str, subfield_name: str):
         """
